@@ -5,7 +5,28 @@ interface CardProps {
   children: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({ className = "", children }) => {
+interface CardComponent extends React.FC<CardProps> {
+  Header: React.FC<CardHeaderProps>;
+  Body: React.FC<CardBodyProps>;
+  Footer: React.FC<CardFooterProps>;
+}
+
+interface CardHeaderProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+interface CardBodyProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+interface CardFooterProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export const Card: CardComponent = ({ className = "", children }) => {
   return (
     <div
       className={`bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden ${className}`}
@@ -14,11 +35,6 @@ export const Card: React.FC<CardProps> = ({ className = "", children }) => {
     </div>
   );
 };
-
-interface CardHeaderProps {
-  className?: string;
-  children: React.ReactNode;
-}
 
 Card.Header = function CardHeader({
   className = "",
@@ -33,19 +49,9 @@ Card.Header = function CardHeader({
   );
 };
 
-interface CardBodyProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
 Card.Body = function CardBody({ className = "", children }: CardBodyProps) {
   return <div className={`p-6 ${className}`}>{children}</div>;
 };
-
-interface CardFooterProps {
-  className?: string;
-  children: React.ReactNode;
-}
 
 Card.Footer = function CardFooter({
   className = "",
