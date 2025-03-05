@@ -1,0 +1,33 @@
+{
+  "name": "my-muqabala-3.0",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "node clean.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Application CRM et coaching pour relations et développement personnel",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.8",
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "next": "^15.2.1",
+    "postcss": "^8.5.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.9",
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.9"
+  }
+}
