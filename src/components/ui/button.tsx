@@ -2,7 +2,7 @@ import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "success" | "danger" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   isLoading?: boolean;
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
@@ -42,6 +42,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getSizeClasses = () => {
     switch (size) {
+      case "xs":
+        return "px-2 py-1 text-xs";
       case "sm":
         return "px-3 py-1.5 text-sm";
       case "md":
