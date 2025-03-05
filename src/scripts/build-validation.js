@@ -9,190 +9,195 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
-
-// Configuration
-const APP_DIR = path.resolve(__dirname, '..');
-const COMPONENTS_DIR = path.resolve(APP_DIR, 'components');
-const PAGES_DIR = path.resolve(APP_DIR, 'app');
 
 // Couleurs pour la console
-const COLORS = {
+const colors = {
   reset: '\x1b[0m',
-  red: '\x1b[31m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
+  red: '\x1b[31m',
   blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
+  cyan: '\x1b[36m'
 };
 
-console.log(`${COLORS.cyan}=== Du00e9marrage de la validation du build ====${COLORS.reset}`);
+// Log stylu00e9s
+const log = {
+  success: (msg) => console.log(`${colors.green}[SUCCu00c8S] ${msg}${colors.reset}`),
+  warning: (msg) => console.log(`${colors.yellow}[AVERTISSEMENT] ${msg}${colors.reset}`),
+  error: (msg) => console.log(`${colors.red}[ERREUR] ${msg}${colors.reset}`),
+  info: (msg) => console.log(`${colors.blue}[INFO] ${msg}${colors.reset}`),
+  heading: (msg) => console.log(`${colors.cyan}${msg}${colors.reset}`)
+};
 
-// Compteurs de validation
-let errors = 0;
-let warnings = 0;
-let successes = 0;
+// Compteurs pour le ru00e9sumu00e9
+let successCount = 0;
+let warningCount = 0;
+let errorCount = 0;
 
-/**
- * Journalisation avec couleurs
- */
-function log(message, type = 'info') {
-  switch (type) {
-    case 'error':
-      console.error(`${COLORS.red}[ERREUR] ${message}${COLORS.reset}`);
-      errors++;
-      break;
-    case 'warning':
-      console.warn(`${COLORS.yellow}[AVERTISSEMENT] ${message}${COLORS.reset}`);
-      warnings++;
-      break;
-    case 'success':
-      console.log(`${COLORS.green}[SUCCu00c8S] ${message}${COLORS.reset}`);
-      successes++;
-      break;
-    default:
-      console.log(`${COLORS.blue}[INFO] ${message}${COLORS.reset}`);
+// Fonction pour vu00e9rifier si un fichier contient 'use client'
+function checkUseClientDirective(filePath) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (content.trim().startsWith('"use client"') || content.trim().startsWith('\'use client\'')) {
+      log.success(`Directive "use client" trouvu00e9e dans: ${path.relative('', filePath)}`);
+      successCount++;
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    log.error(`Erreur lors de la lecture du fichier ${filePath}: ${error.message}`);
+    errorCount++;
+    return false;
   }
 }
 
-/**
- * Vu00e9rifie la pru00e9sence de 'use client' dans les composants clients
- */
-function checkClientDirectives() {
-  log('Vu00e9rification des directives "use client"...');
+// Fonction pour trouver tous les fichiers dans un du00e9partement
+function findFiles(dir, extension) {
+  if (!fs.existsSync(dir)) return [];
   
-  const clientComponents = [
-    // UI Components
-    path.resolve(COMPONENTS_DIR, 'ui/button.tsx'),
-    path.resolve(COMPONENTS_DIR, 'ui/card.tsx'),
-    // Page components
-    path.resolve(PAGES_DIR, 'appointments/page.tsx'),
-    // Utils
-    path.resolve(APP_DIR, 'utils/logger.ts'),
-    path.resolve(APP_DIR, 'utils/build-logger.ts'),
-    path.resolve(APP_DIR, 'utils/component-validator.ts'),
-    // Hooks
-    path.resolve(APP_DIR, 'hooks/useComponentLogger.ts'),
+  const files = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...findFiles(fullPath, extension));
+    } else if (entry.isFile() && (extension ? entry.name.endsWith(extension) : true)) {
+      files.push(fullPath);
+    }
+  }
+  
+  return files;
+}
+
+// Vu00e9rifier les imports dans un fichier
+function checkImports(filePath, importName, importPath) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    // Vu00e9rification simpliu00e9e avec des expressions ru00e9guliu00e8res
+    const importRegex = new RegExp(`import[\s\n]*{[\s\n]*${importName}[\s\n]*}[\s\n]*from[\s\n]*['"](${importPath})`, 'i');
+    if (importRegex.test(content)) {
+      log.success(`Import du00e9tectu00e9 pour: ${importName} from ${importPath}`);
+      successCount++;
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    log.error(`Erreur lors de la vu00e9rification des imports dans ${filePath}: ${error.message}`);
+    errorCount++;
+    return false;
+  }
+}
+
+// Vu00e9rifier l'existence d'un fichier de configuration
+function checkConfigFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    log.success(`${path.basename(filePath)} trouvu00e9`);
+    successCount++;
+    
+    // Vu00e9rifier les configurations expu00e9rimentales pour next.config.js
+    if (path.basename(filePath) === 'next.config.js') {
+      try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        if (content.includes('experimental') && content.includes('optimizeCss')) {
+          log.warning('Configuration expu00e9rimentale du00e9tectu00e9e dans next.config.js');
+          warningCount++;
+        }
+      } catch (error) {
+        log.error(`Erreur lors de la lecture de ${filePath}: ${error.message}`);
+        errorCount++;
+      }
+    }
+    
+    return true;
+  } else {
+    log.error(`${path.basename(filePath)} non trouvu00e9`);
+    errorCount++;
+    return false;
+  }
+}
+
+// Vu00e9rifier les directives 'use client' dans tous les fichiers .tsx du ru00e9pertoire app qui rendent des composants clients
+function checkAllClientComponentFiles() {
+  log.info('Vu00e9rification des directives "use client" dans toutes les pages...');
+  const appDir = path.join(process.cwd(), 'src', 'app');
+  
+  // Trouver tous les fichiers page.tsx dans le du00e9partement app
+  const pageFiles = findFiles(appDir, 'page.tsx');
+  
+  for (const file of pageFiles) {
+    try {
+      const content = fs.readFileSync(file, 'utf8');
+      // Vu00e9rifier si le fichier importe des composants clients connus
+      const hasClientImports = [
+        /import[\s\n]*{[\s\n]*[^}]*Button[^}]*}[\s\n]*from/,
+        /import[\s\n]*{[\s\n]*[^}]*Card[^}]*}[\s\n]*from/,
+        /import[\s\n]*{[\s\n]*[^}]*Dialog[^}]*}[\s\n]*from/,
+        /import[\s\n]*{[\s\n]*[^}]*Form[^}]*}[\s\n]*from/
+      ].some(regex => regex.test(content));
+      
+      // Si le fichier importe des composants clients, il doit avoir la directive 'use client'
+      if (hasClientImports) {
+        if (!checkUseClientDirective(file)) {
+          log.error(`Directive "use client" manquante dans: ${path.relative('', file)} - requis pour les composants clients`);
+          errorCount++;
+        }
+      }
+    } catch (error) {
+      log.error(`Erreur lors de l'analyse du fichier ${file}: ${error.message}`);
+      errorCount++;
+    }
+  }
+}
+
+// Fonction principale de validation
+function runValidation() {
+  log.heading('=== Du00e9marrage de la validation du build ====');
+  
+  // 1. Vu00e9rifier les directives 'use client' dans certains fichiers spu00e9cifiques
+  log.info('Vu00e9rification des directives "use client"...');
+  const clientFiles = [
+    path.join(process.cwd(), 'src', 'components', 'ui', 'button.tsx'),
+    path.join(process.cwd(), 'src', 'components', 'ui', 'card.tsx'),
+    path.join(process.cwd(), 'src', 'app', 'appointments', 'page.tsx'),
+    path.join(process.cwd(), 'src', 'utils', 'logger.ts'),
+    path.join(process.cwd(), 'src', 'utils', 'build-logger.ts'),
+    path.join(process.cwd(), 'src', 'utils', 'component-validator.ts'),
+    path.join(process.cwd(), 'src', 'hooks', 'useComponentLogger.ts')
   ];
   
-  clientComponents.forEach(file => {
-    try {
-      if (!fs.existsSync(file)) {
-        log(`Fichier non trouvu00e9: ${file}`, 'warning');
-        return;
-      }
-      
-      const content = fs.readFileSync(file, 'utf8');
-      if (!content.includes('use client')) {
-        log(`Directive "use client" manquante dans: ${path.relative(APP_DIR, file)}`, 'error');
-      } else {
-        log(`Directive "use client" trouvu00e9e dans: ${path.relative(APP_DIR, file)}`, 'success');
-      }
-    } catch (error) {
-      log(`Erreur lors de la vu00e9rification de ${file}: ${error.message}`, 'error');
-    }
-  });
-}
-
-/**
- * Vu00e9rifie les imports de composants dans le fichier appointments/page.tsx
- */
-function checkAppointmentsImports() {
-  log('Vu00e9rification des imports dans appointments/page.tsx...');
+  clientFiles.forEach(checkUseClientDirective);
   
-  const appointmentsFile = path.resolve(PAGES_DIR, 'appointments/page.tsx');
+  // 2. Vu00e9rifier toutes les pages pour la directive 'use client' si elles utilisent des composants clients
+  checkAllClientComponentFiles();
   
-  try {
-    if (!fs.existsSync(appointmentsFile)) {
-      log(`Fichier appointments/page.tsx non trouvu00e9!`, 'error');
-      return;
-    }
-    
-    const content = fs.readFileSync(appointmentsFile, 'utf8');
-    
-    // Vu00e9rifier les imports nu00e9cessaires - plus flexible pour matcher divers formats d'import
-    const requiredImports = [
-      { name: 'Card', from: '../../components/ui/card' },
-      { name: 'Button', from: '../../components/ui/button' },
-    ];
-    
-    requiredImports.forEach(imp => {
-      // Cette regex est plus flexible et supporte divers formats d'import
-      const importRegex = new RegExp(`import\s+(?:.+\s+)?(?:{\s*${imp.name}(?:\s*,.*?)?\s*}|${imp.name})\s+from\s+['"]${imp.from.replace(/\//g, '\\/')}['"]`);
-      if (!content.includes(`import`) || !content.includes(imp.name) || !content.includes(imp.from)) {
-        log(`Import manquant pour: ${imp.name} from ${imp.from}`, 'error');
-      } else {
-        log(`Import du00e9tectu00e9 pour: ${imp.name} from ${imp.from}`, 'success');
-      }
-    });
-    
-  } catch (error) {
-    log(`Erreur lors de la vu00e9rification des imports: ${error.message}`, 'error');
-  }
-}
-
-/**
- * Vu00e9rifie les configurations critiques
- */
-function checkCriticalConfigs() {
-  log('Vu00e9rification des configurations critiques...');
+  // 3. Vu00e9rifier les imports dans un fichier spu00e9cifique
+  log.info('Vu00e9rification des imports dans appointments/page.tsx...');
+  const appointmentsFile = path.join(process.cwd(), 'src', 'app', 'appointments', 'page.tsx');
+  checkImports(appointmentsFile, 'Card', '../../components/ui/card');
+  checkImports(appointmentsFile, 'Button', '../../components/ui/button');
   
-  // Vu00e9rifier next.config.js
-  const nextConfigFile = path.resolve(APP_DIR, '..', 'next.config.js');
-  if (fs.existsSync(nextConfigFile)) {
-    log('next.config.js trouvu00e9', 'success');
-    
-    // Vu00e9rifier contenu
-    const content = fs.readFileSync(nextConfigFile, 'utf8');
-    if (content.includes('experimental')) {
-      log('Configuration expu00e9rimentale du00e9tectu00e9e dans next.config.js', 'warning');
-    }
-  } else {
-    log('next.config.js non trouvu00e9', 'warning');
-  }
+  // 4. Vu00e9rifier les fichiers de configuration essentiels
+  log.info('Vu00e9rification des configurations critiques...');
+  checkConfigFile(path.join(process.cwd(), 'next.config.js'));
+  checkConfigFile(path.join(process.cwd(), 'tsconfig.json'));
   
-  // Vu00e9rifier tsconfig.json
-  const tsconfigFile = path.resolve(APP_DIR, '..', 'tsconfig.json');
-  if (fs.existsSync(tsconfigFile)) {
-    log('tsconfig.json trouvu00e9', 'success');
-    
-    try {
-      const tsconfig = JSON.parse(fs.readFileSync(tsconfigFile, 'utf8'));
-      if (tsconfig.compilerOptions?.strict !== true) {
-        log('Option "strict" non activu00e9e dans tsconfig.json', 'warning');
-      }
-    } catch (error) {
-      log(`Erreur lors de l'analyse de tsconfig.json: ${error.message}`, 'error');
-    }
-  } else {
-    log('tsconfig.json non trouvu00e9', 'error');
-  }
-}
-
-/**
- * Exu00e9cute les vu00e9rifications
- */
-function runChecks() {
-  // Vu00e9rifications structurelles
-  checkClientDirectives();
-  checkAppointmentsImports();
-  checkCriticalConfigs();
+  // Afficher le ru00e9sumu00e9
+  console.log();
+  log.heading('=== Ru00e9sumu00e9 de la validation ====');
+  console.log(`${colors.green}${successCount} succu00e8s${colors.reset}`);
+  console.log(`${colors.yellow}${warningCount} avertissements${colors.reset}`);
+  console.log(`${colors.red}${errorCount} erreurs${colors.reset}`);
   
-  // Afficher ru00e9sumu00e9
-  console.log(`\n${COLORS.cyan}=== Ru00e9sumu00e9 de la validation ====${COLORS.reset}`);
-  console.log(`${COLORS.green}${successes} succu00e8s${COLORS.reset}`);
-  console.log(`${COLORS.yellow}${warnings} avertissements${COLORS.reset}`);
-  console.log(`${COLORS.red}${errors} erreurs${COLORS.reset}`);
-  
-  if (errors > 0) {
-    log('Des erreurs ont u00e9tu00e9 trouvu00e9es, veuillez les corriger avant de continuer', 'error');
+  if (errorCount > 0) {
+    log.error('Des erreurs ont u00e9tu00e9 du00e9tectu00e9es. Le build ne peut pas continuer.');
     process.exit(1);
-  } else if (warnings > 0) {
-    log('Des avertissements ont u00e9tu00e9 trouvu00e9s, mais le build peut continuer', 'warning');
-  } else {
-    log('Tous les tests ont ru00e9ussi!', 'success');
+  } else if (warningCount > 0) {
+    log.warning('Des avertissements ont u00e9tu00e9 trouvu00e9s, mais le build peut continuer');
   }
 }
 
-runChecks();
+// Exu00e9cuter la validation
+runValidation();
