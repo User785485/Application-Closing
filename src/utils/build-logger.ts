@@ -1,6 +1,6 @@
 "use client";
 
-import { logToConsole } from './logger';
+import { appLogger } from './logger';
 
 // Types for build errors
 export type BuildErrorType = {
@@ -34,7 +34,7 @@ export function logBuildError(component: string, file: string, message: string, 
   
   // Format a detailed log message
   const logMessage = `BUILD ERROR [${component}] in ${file}: ${message}\n${stack || 'No stack trace'}`;
-  logToConsole(logMessage, 'error');
+  appLogger.error(logMessage);
   
   // Also log to console in development for immediate visibility
   if (process.env.NODE_ENV === 'development') {
