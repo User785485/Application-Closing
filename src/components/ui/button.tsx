@@ -1,4 +1,6 @@
 import React from "react";
+import { uiLogger } from "../../utils/logger";
+import { useComponentLogger } from "../../hooks/useComponentLogger";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "success" | "danger" | "outline" | "ghost";
@@ -19,8 +21,48 @@ export const Button: React.FC<ButtonProps> = ({
   rightIcon,
   children,
   disabled,
+  onClick,
   ...props
 }) => {
+  // Utilisation du hook de surveillance des composants
+  const { logEvent } = useComponentLogger({
+    componentName: 'Button',
+    props: { variant, size, isLoading, fullWidth, disabled },
+    validations: [
+      {
+        prop: 'size',
+        validValues: ['xs', 'sm', 'md', 'lg'],
+        message: `Invalid button size. Must be one of: xs, sm, md, lg`
+      },
+      {
+        prop: 'variant',
+        validValues: ['primary', 'secondary', 'success', 'danger', 'outline', 'ghost'],
+        message: `Invalid button variant. Must be one of: primary, secondary, success, danger, outline, ghost`
+      }
+    ]
+  });
+
+  // Log pour débogage et prévention des problèmes futurs
+  uiLogger.debug(`Button rendered with variant=${variant}, size=${size}`);
+
+  // Vérification de taille invalide (pour détecter d'éventuelles valeurs invalides futures)
+  if (size && !["xs", "sm", "md", "lg"].includes(size)) {
+    uiLogger.warn(`Invalid button size: ${size}. Using default size 'md' instead.`);
+    size = "md";
+  }
+
+  // Vérification de variante invalide
+  if (variant && !["primary", "secondary", "success", "danger", "outline", "ghost"].includes(variant)) {
+    uiLogger.warn(`Invalid button variant: ${variant}. Using default variant 'primary' instead.`);
+    variant = "primary";
+  }
+
+  // Gestionnaire de clic avec journalisation
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    logEvent('click');
+    if (onClick) onClick(e);
+  };
+
   const getVariantClasses = () => {
     switch (variant) {
       case "primary":
@@ -67,6 +109,7 @@ export const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
       disabled={disabled || isLoading}
+      onClick={handleClick}
       {...props}
     >
       {isLoading && (

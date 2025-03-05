@@ -1,0 +1,34 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "\033[1;36m Running pre-commit checks... \033[0m"
+
+# Vu00e9rification TypeScript sans gu00e9nu00e9ration de code
+echo "\033[1;34m Vu00e9rification TypeScript... \033[0m"
+npx tsc --noEmit
+
+if [ $? -ne 0 ]; then
+  echo "\033[1;31mu274c Erreurs TypeScript du00e9tectu00e9es. Corrigez-les avant de commit. \033[0m"
+  exit 1
+fi
+
+# Lint seulement les fichiers dans le stage
+echo "\033[1;34m Vu00e9rification ESLint... \033[0m"
+npx lint-staged
+
+if [ $? -ne 0 ]; then
+  echo "\033[1;31mu274c Erreurs ESLint du00e9tectu00e9es. Corrigez-les avant de commit. \033[0m"
+  exit 1
+fi
+
+# Vu00e9rification des composants UI (en particulier Button)
+echo "\033[1;34m Vu00e9rification des composants UI... \033[0m"
+node scripts/check-ui-components.js
+
+if [ $? -ne 0 ]; then
+  echo "\033[1;31mu274c Problu00e8mes du00e9tectu00e9s dans les composants UI. \033[0m"
+  exit 1
+fi
+
+echo "\033[1;32mu2705 Toutes les vu00e9rifications pru00e9-commit sont passu00e9es. \033[0m"
+exit 0
