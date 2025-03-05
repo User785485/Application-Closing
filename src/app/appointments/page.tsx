@@ -3,13 +3,35 @@
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { validateComponent } from "../../utils/build-logger";
+import { validateImports, validateReactComponentStructure } from "../../utils/import-validator";
+import { appLogger } from "../../utils/logger";
 
-// Valider les composants critiques avant de les utiliser
+// Validation complète des imports critiques
+const importsValidation = validateImports(
+  {
+    Card,
+    Button
+  },
+  '/app/appointments/page.tsx'
+);
+
+// Si des imports invalides sont détectés, les journaliser
+if (!importsValidation.valid) {
+  appLogger.error(`Erreurs d'import dans appointments/page.tsx: ${importsValidation.errors.join(', ')}`);
+}
+
+// Valider aussi la structure des composants composés
+const cardStructureValidation = validateReactComponentStructure(Card, ['Header', 'Body', 'Footer'], 'Card');
+if (!cardStructureValidation.valid) {
+  appLogger.error(`Structure de composant invalide: ${cardStructureValidation.errors.join(', ')}`);
+}
+
+// Conserver la validation simple par composant pour rétro-compatibilité
 const isCardValid = validateComponent(Card, 'Card', '/app/appointments/page.tsx');
 const isButtonValid = validateComponent(Button, 'Button', '/app/appointments/page.tsx');
 
 export default function Appointments() {
-  // Donnu00e9es fictives pour les rendez-vous
+  // Données fictives pour les rendez-vous
   const appointments = [
     {
       id: 1,
@@ -17,7 +39,7 @@ export default function Appointments() {
       date: "2025-03-15T10:00:00",
       duration: 60,
       type: "Coaching spirituel",
-      status: "Confirmu00e9",
+      status: "Confirmé",
       notes: "Session de suivi sur le travail au coeur",
     },
     {
@@ -26,7 +48,7 @@ export default function Appointments() {
       date: "2025-03-15T13:30:00",
       duration: 45,
       type: "Diagnostic",
-      status: "Confirmu00e9",
+      status: "Confirmé",
       notes: "Premier diagnostic, exploration des attentes",
     },
     {
@@ -36,7 +58,7 @@ export default function Appointments() {
       duration: 90,
       type: "Coaching complet",
       status: "En attente",
-      notes: "Session avec lu00e9gu00e8re anxiety face au changement",
+      notes: "Session avec légère anxiety face au changement",
     },
     {
       id: 4,
@@ -44,7 +66,7 @@ export default function Appointments() {
       date: "2025-03-16T15:00:00",
       duration: 30,
       type: "Coaching rapide",
-      status: "Confirmu00e9",
+      status: "Confirmé",
       notes: "Suivi des exercices spirituels quotidiens",
     },
     {
@@ -53,8 +75,8 @@ export default function Appointments() {
       date: "2025-03-17T09:30:00",
       duration: 60,
       type: "Coaching spirituel",
-      status: "Confirmu00e9",
-      notes: "Apru00e8s deux semaines de pratique regu00e9liu00e8re",
+      status: "Confirmé",
+      notes: "Après deux semaines de pratique régulière",
     },
   ];
 
@@ -81,11 +103,11 @@ export default function Appointments() {
   // Fonction pour obtenir la couleur du statut
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Confirmu00e9":
+      case "Confirmé":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300";
       case "En attente":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300";
-      case "Annulu00e9":
+      case "Annulé":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300";
@@ -151,7 +173,7 @@ export default function Appointments() {
           </div>
           <div className="flex space-x-2">
             <Button variant="outline" size="sm">
-              &lt; Pru00e9cu00e9dent
+              &lt; Précédent
             </Button>
             <Button variant="outline" size="sm">
               Suivant &gt;
@@ -210,7 +232,7 @@ export default function Appointments() {
                         Notes
                       </Button>
                       <Button variant="primary" size="sm">
-                        Du00e9marrer
+                        Démarrer
                       </Button>
                     </div>
                   </div>
@@ -291,7 +313,7 @@ export default function Appointments() {
                 <th className="py-3 px-4 text-left font-medium">Client</th>
                 <th className="py-3 px-4 text-left font-medium">Date & Heure</th>
                 <th className="py-3 px-4 text-left font-medium">Type</th>
-                <th className="py-3 px-4 text-left font-medium">Duru00e9e</th>
+                <th className="py-3 px-4 text-left font-medium">Durée</th>
                 <th className="py-3 px-4 text-left font-medium">Statut</th>
                 <th className="py-3 px-4 text-left font-medium">Actions</th>
               </tr>
@@ -336,7 +358,7 @@ export default function Appointments() {
                         Modifier
                       </Button>
                       <Button variant="primary" size="sm">
-                        Du00e9tails
+                        Détails
                       </Button>
                     </div>
                   </td>
