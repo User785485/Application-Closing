@@ -88,9 +88,7 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('tailwindcss'),
-  ],
+  plugins: [],
   corePlugins: {
     fontSize: true,
     fontWeight: true,
