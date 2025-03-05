@@ -1,5 +1,12 @@
+"use client";
+
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { validateComponent } from "../../utils/build-logger";
+
+// Valider les composants critiques avant de les utiliser
+const isCardValid = validateComponent(Card, 'Card', '/app/appointments/page.tsx');
+const isButtonValid = validateComponent(Button, 'Button', '/app/appointments/page.tsx');
 
 export default function Appointments() {
   // Donnu00e9es fictives pour les rendez-vous

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node src/scripts/build-validation.js",
     "build": "next build",
+    "test-components": "ts-node --esm src/tests/component-validation-tests.ts",
     "start": "next start",
     "lint": "next lint",
     "clean": "node clean.js",

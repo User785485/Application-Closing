@@ -137,6 +137,26 @@ export class ConfigValidator {
   }
 
   /**
+   * Valide les composants React et les imports
+   */
+  validateComponentImports(imports: Record<string, any>, filePath: string): boolean {
+    let allValid = true;
+    
+    Object.entries(imports).forEach(([name, component]) => {
+      if (component === undefined || component === null) {
+        console.error(`❌ Component validation failed: ${name} is undefined in ${filePath}`);
+        allValid = false;
+      }
+    });
+    
+    if (allValid) {
+      console.log(`✅ All component imports validated in ${filePath}`);
+    }
+    
+    return allValid;
+  }
+
+  /**
    * Valide toutes les configurations critiques
    */
   async validateAllConfigs(projectRoot: string): Promise<{ valid: boolean; report: string }> {
@@ -176,3 +196,33 @@ ${allIssues.length > 0 ? 'Problèmes détectés:\n' + allIssues.map(issue => `- 
 }
 
 export const configValidator = new ConfigValidator();
+
+export function validateConfiguration() {
+  // Check Next.js version
+  try {
+    const nextConfig = require('next/package.json');
+    if (!nextConfig.version.startsWith('15')) {
+      throw new Error(`Next.js version must start with 15.x, got ${nextConfig.version}`);
+    }
+    
+    // Validation passed
+    console.log('✅ Next.js version validated: ' + nextConfig.version);
+  } catch (error) {
+    console.error('❌ Next.js validation failed:', error);
+    throw error;
+  }
+
+  // Check Tailwind CSS version
+  try {
+    const tailwindConfig = require('tailwindcss/package.json');
+    if (!tailwindConfig.version.startsWith('4')) {
+      throw new Error(`Tailwind CSS version must start with 4.x, got ${tailwindConfig.version}`);
+    }
+    
+    // Validation passed
+    console.log('✅ Tailwind CSS version validated: ' + tailwindConfig.version);
+  } catch (error) {
+    console.error('❌ Tailwind CSS validation failed:', error);
+    throw error;
+  }
+}
