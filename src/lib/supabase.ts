@@ -1,6 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vldkberonuuujnoiscwl.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsZGtiZXJvbnV1dWpub2lzY3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDExNjczMjAsImV4cCI6MjA1Njc0MzMyMH0.5VbPa3J0KkDQ26xrpIxsRStmhQrnyVq6ZCtzUZz9Kmg';
+// Récupérer les variables d'environnement
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Vérifier que les variables d'environnement sont définies
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Erreur critique: Variables d\'environnement Supabase manquantes');
+}
+
+// Logger les informations de configuration
+console.log(`Supabase initialization: URL ${supabaseUrl?.substring(0, 15)}... Key defined: ${!!supabaseAnonKey}`);
+
+const options = {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: { 'x-application-name': 'my-muqabala' },
+  },
+};
+
+let supabaseClient = null;
+
+try {
+  // Initialiser le client Supabase avec des options avancées
+  supabaseClient = createClient(supabaseUrl || '', supabaseAnonKey || '', options);
+  console.log('Supabase client created successfully');
+} catch (error) {
+  console.error('Error initializing Supabase client:', error);
+}
+
+// Exporter le client Supabase
+export const supabase = supabaseClient;

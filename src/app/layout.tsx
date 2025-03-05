@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import Navigation from "../components/navigation";
 import { SupabaseProvider } from "../lib/supabase-provider";
+import { useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -12,13 +13,29 @@ export const metadata: Metadata = {
   description: "Plateforme de coaching et de développement personnel",
 };
 
+// Ajouter un logger côté serveur pour tracer l'initialisation
+console.log('RootLayout is being initialized on server-side...');
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Utiliser un useEffect pour logger le cycle de vie côté client
+  if (typeof window !== 'undefined') {
+    console.log('RootLayout rendering on client-side');
+  }
+  
   return (
     <html lang="fr" suppressHydrationWarning>
+      <head>
+        {/* Ajouter un script qui va logger dès que le chargement commence */}
+        <script 
+          dangerouslySetInnerHTML={{ 
+            __html: `console.log('Document starting to load at: ' + new Date().toISOString());` 
+          }} 
+        />
+      </head>
       <body className={`${inter.variable} font-sans min-h-screen`}>
         <SupabaseProvider>
           <ThemeProvider defaultTheme="light" storageKey="theme-preference">
@@ -39,6 +56,17 @@ export default function RootLayout({
             </div>
           </ThemeProvider>
         </SupabaseProvider>
+        
+        {/* Script qui s'exécute une fois que la page est chargée */}
+        <script 
+          dangerouslySetInnerHTML={{ 
+            __html: `
+              document.addEventListener('DOMContentLoaded', function() {
+                console.log('Document fully loaded at: ' + new Date().toISOString());
+              });
+            ` 
+          }} 
+        />
       </body>
     </html>
   );

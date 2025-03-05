@@ -1,69 +1,63 @@
 "use client";
 
-import React from "react";
+import React from 'react';
 
-interface CardProps {
-  className?: string;
+export interface CardProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-interface CardHeaderProps {
-  className?: string;
+export interface CardHeaderProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-interface CardBodyProps {
-  className?: string;
+export interface CardBodyProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-interface CardFooterProps {
-  className?: string;
+export interface CardFooterProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-// Définition du composant Header
-const CardHeader = ({ className = "", children }: CardHeaderProps) => {
+interface CardComponent extends React.FC<CardProps> {
+  Header: React.FC<CardHeaderProps>;
+  Body: React.FC<CardBodyProps>;
+  Footer: React.FC<CardFooterProps>;
+}
+
+const Card: CardComponent = ({ children, className = '' }) => {
   return (
-    <div
-      className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}
-    >
+    <div className={`bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden ${className}`}>
       {children}
     </div>
   );
 };
 
-// Définition du composant Body
-const CardBody = ({ className = "", children }: CardBodyProps) => {
-  return <div className={`p-6 ${className}`}>{children}</div>;
-};
-
-// Définition du composant Footer
-const CardFooter = ({ className = "", children }: CardFooterProps) => {
+Card.Header = ({ children, className = '' }) => {
   return (
-    <div
-      className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 ${className}`}
-    >
+    <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}>
       {children}
     </div>
   );
 };
 
-// Définition du composant Card principal
-const Card = ({ className = "", children }: CardProps) => {
+Card.Body = ({ children, className = '' }) => {
   return (
-    <div
-      className={`bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden ${className}`}
-    >
+    <div className={`px-6 py-4 ${className}`}>
       {children}
     </div>
   );
 };
 
-// Attacher les sous-composants à Card
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
+Card.Footer = ({ children, className = '' }) => {
+  return (
+    <div className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+      {children}
+    </div>
+  );
+};
 
-// Exporter le composant avec tous ses sous-composants
-export { Card };
+export default Card;
