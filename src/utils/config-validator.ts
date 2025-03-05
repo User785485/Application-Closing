@@ -12,7 +12,7 @@ export class ConfigValidator {
   validateTailwindConfig(configPath: string): { valid: boolean; issues: string[] } {
     const issues: string[] = [];
     try {
-      // Vu00e9rifie si le fichier existe
+      // Vérifie si le fichier existe
       if (!fs.existsSync(configPath)) {
         issues.push(`Le fichier de configuration Tailwind est manquant : ${configPath}`);
         return { valid: false, issues };
@@ -21,22 +21,22 @@ export class ConfigValidator {
       // Analyse le contenu du fichier
       const configContent = fs.readFileSync(configPath, 'utf8');
       
-      // Vu00e9rifie la pru00e9sence des u00e9lu00e9ments essentiels
+      // Vérifie la présence des éléments essentiels
       if (!configContent.includes('@tailwindcss/postcss') && !configContent.includes('tailwindcss/postcss')) {
-        issues.push("La ru00e9fu00e9rence au plugin @tailwindcss/postcss est manquante");
+        issues.push("La référence au plugin @tailwindcss/postcss est manquante");
       }
       
-      // Vu00e9rifie les tailles d'u00e9cran
+      // Vérifie les tailles d'écran
       if (!configContent.includes('screens:') || !configContent.match(/(sm|md|lg|xl):/g)) {
-        issues.push("Les du00e9finitions de tailles d'u00e9cran (screens) semblent manquantes ou incomplu00e8tes");
+        issues.push("Les définitions de tailles d'écran (screens) semblent manquantes ou incomplètes");
       }
       
-      // Vu00e9rifie les tailles de police
+      // Vérifie les tailles de police
       if (!configContent.includes('fontSize:')) {
-        issues.push("Les du00e9finitions de tailles de police (fontSize) semblent manquantes");
+        issues.push("Les définitions de tailles de police (fontSize) semblent manquantes");
       }
 
-      // Vu00e9rifie si darkMode est du00e9fini
+      // Vérifie si darkMode est défini
       if (!configContent.includes('darkMode:')) {
         issues.push("La configuration du mode sombre (darkMode) est manquante");
       }
@@ -58,7 +58,7 @@ export class ConfigValidator {
   validatePostCSSConfig(configPath: string): { valid: boolean; issues: string[] } {
     const issues: string[] = [];
     try {
-      // Vu00e9rifie si le fichier existe
+      // Vérifie si le fichier existe
       if (!fs.existsSync(configPath)) {
         issues.push(`Le fichier de configuration PostCSS est manquant : ${configPath}`);
         return { valid: false, issues };
@@ -67,7 +67,7 @@ export class ConfigValidator {
       // Analyse le contenu du fichier
       const configContent = fs.readFileSync(configPath, 'utf8');
       
-      // Vu00e9rifie la pru00e9sence des plugins essentiels
+      // Vérifie la présence des plugins essentiels
       if (!configContent.includes('@tailwindcss/postcss') && !configContent.includes('tailwindcss')) {
         issues.push("Le plugin Tailwind est manquant dans la configuration PostCSS");
       }
@@ -88,12 +88,12 @@ export class ConfigValidator {
   }
 
   /**
-   * Vu00e9rifie les du00e9pendances dans le package.json
+   * Vérifie les dépendances dans le package.json
    */
   validatePackageDependencies(packagePath: string): { valid: boolean; issues: string[] } {
     const issues: string[] = [];
     try {
-      // Vu00e9rifie si le fichier existe
+      // Vérifie si le fichier existe
       if (!fs.existsSync(packagePath)) {
         issues.push(`Le fichier package.json est manquant : ${packagePath}`);
         return { valid: false, issues };
@@ -103,26 +103,26 @@ export class ConfigValidator {
       const packageContent = fs.readFileSync(packagePath, 'utf8');
       const packageJson = JSON.parse(packageContent);
       
-      // Vu00e9rifie les du00e9pendances Tailwind
+      // Vérifie les dépendances Tailwind
       const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
       
       if (!deps.tailwindcss) {
-        issues.push("tailwindcss n'est pas listu00e9 comme du00e9pendance");
+        issues.push("tailwindcss n'est pas listé comme dépendance");
       } else if (!deps.tailwindcss.startsWith('4.')) {
-        issues.push(`La version de tailwindcss (${deps.tailwindcss}) n'est pas 4.x");
+        issues.push(`La version de tailwindcss (${deps.tailwindcss}) n'est pas 4.x`);
       }
       
       if (!deps.postcss) {
-        issues.push("postcss n'est pas listu00e9 comme du00e9pendance");
+        issues.push("postcss n'est pas listé comme dépendance");
       }
       
       if (!deps.autoprefixer) {
-        issues.push("autoprefixer n'est pas listu00e9 comme du00e9pendance");
+        issues.push("autoprefixer n'est pas listé comme dépendance");
       }
 
-      // Vu00e9rifie la compatibilitu00e9 Next.js
+      // Vérifie la compatibilité Next.js
       if (deps.next && !deps.next.startsWith('15.')) {
-        issues.push(`La version de Next.js (${deps.next}) n'est pas 15.x");
+        issues.push(`La version de Next.js (${deps.next}) n'est pas 15.x`);
       }
 
       return {
