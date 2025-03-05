@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { uiLogger } from "../../utils/logger";
 import { useComponentLogger } from "../../hooks/useComponentLogger";

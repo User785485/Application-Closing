@@ -1,3 +1,5 @@
+"use client";
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LoggerOptions {
